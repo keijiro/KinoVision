@@ -55,6 +55,7 @@ Shader "Hidden/Visualizers/MotionVectors"
     struct v2f_arrows
     {
         float4 vertex : SV_POSITION;
+        float2 scoord : TEXCOORD;
         half4 color : COLOR;
     };
 
@@ -72,21 +73,38 @@ Shader "Hidden/Visualizers/MotionVectors"
         // Offset the arrow position.
         pos += v.texcoord.xy * 2 - 1 + _Scale.xy;
 
+        // Convert to the screen coordinates.
+        float2 scoord = (pos + 1) * 0.5 * _ScreenParams.xy;
+
+        // Snap to a pixel-perfect position.
+        scoord = round(scoord);
+
+        // Bring back to the normalized screen space.
+        pos = (scoord + 0.5) * (_ScreenParams.zw - 1) * 2 - 1;
+
         // Arrow color
         float2 mv2 = abs(mv) * _Scale.z;
         float alpha = saturate(length(mv2));
-        half4 col = float4(alpha, mv2, alpha);
+        half4 col = saturate(float4(alpha, mv2, alpha));
 
         // Output
         v2f_arrows o;
         o.vertex = float4(pos, 0, 1);
+        o.scoord = scoord;
         o.color = col;
         return o;
     }
 
+    float Gamma(float c)
+    {
+        return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878);
+    }
+
     half4 frag_arrows(v2f_arrows i) : SV_Target
     {
-        return i.color;
+        half4 c = i.color;
+        c.a *= Gamma(length(frac(i.scoord) - 0.5) / 0.71);
+        return c;
     }
 
     ENDCG
