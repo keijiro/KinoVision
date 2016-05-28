@@ -19,12 +19,12 @@ namespace Visualizers
                 // base shape
                 var arrow = new Vector3[6]
                 {
-                    new Vector3(0, 0, 0),
-                    new Vector3(0, 1, 0),
-                    new Vector3(0, 1, 0),
-                    new Vector3(-0.2f, 0.7f, 0),
-                    new Vector3(0, 1, 0),
-                    new Vector3(0.2f, 0.7f, 0)
+                    new Vector3( 0, 0, 0),
+                    new Vector3( 0, 1, 0),
+                    new Vector3( 0, 1, 0),
+                    new Vector3(-1, 1, 0),
+                    new Vector3( 0, 1, 0),
+                    new Vector3( 1, 1, 0)
                 };
 
                 // make the vertex array

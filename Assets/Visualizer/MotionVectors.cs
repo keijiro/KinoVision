@@ -98,7 +98,7 @@ namespace Visualizers
             // Set the scale parameter.
             var sy = 1.0f / _resolution;
             var sx = sy * Screen.height / Screen.width;
-            _material.SetVector("_Scale", new Vector3(sx, sy, _scale * 10));
+            _material.SetVector("_Scale", new Vector3(sx, sy, _scale));
 
             // Draw the arrows.
             _material.SetTexture("_MainTex", mv);
