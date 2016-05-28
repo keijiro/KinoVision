@@ -11,6 +11,9 @@ namespace Visualizers
 
             Mesh _mesh;
 
+            public int columnCount { get; private set; }
+            public int rowCount { get; private set; }
+
             public void BuildMesh(int columns, int rows)
             {
                 // base shape
@@ -62,11 +65,15 @@ namespace Visualizers
 
                 _mesh.Optimize();
                 _mesh.UploadMeshData(true);
+
+                // update the properties
+                columnCount = columns;
+                rowCount = rows;
             }
 
             public void DestroyMesh()
             {
-                DestroyImmediate(_mesh);
+                if (_mesh != null) DestroyImmediate(_mesh);
                 _mesh = null;
             }
         }

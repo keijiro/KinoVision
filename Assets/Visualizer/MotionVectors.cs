@@ -18,13 +18,23 @@ namespace Visualizers
 
         #endregion
 
-        #region Private properties
+        #region Private properties and methods
 
         [SerializeField, HideInInspector]
         Shader _shader;
 
         Material _material;
-        BulkMesh _arrows = new BulkMesh();
+        BulkMesh _arrows;
+
+        void PrepareArrows()
+        {
+            var columns = _resolution * Screen.width / Screen.height;
+            if (_arrows.columnCount != columns || _arrows.rowCount != _resolution)
+            {
+                _arrows.DestroyMesh();
+                _arrows.BuildMesh(columns, _resolution);
+            }
+        }
 
         #endregion
 
@@ -42,8 +52,8 @@ namespace Visualizers
                 DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
 
             // Build the mesh of arrows.
-            var columns = _resolution * Screen.width / Screen.height;
-            _arrows.BuildMesh(columns, _resolution);
+            _arrows = new BulkMesh();
+            PrepareArrows();
         }
 
         void OnDisable()
@@ -52,11 +62,14 @@ namespace Visualizers
             _material = null;
 
             _arrows.DestroyMesh();
+            _arrows = null;
         }
 
         void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
             const RenderTextureFormat rghalf = RenderTextureFormat.RGHalf;
+
+            PrepareArrows();
 
             // Retrieve the motion vectors and shrink it.
             var mv_w = source.width / 2;
