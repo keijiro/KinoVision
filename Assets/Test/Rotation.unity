@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18424939, g: 0.22918262, b: 0.3018211, a: 1}
+  m_IndirectSpecularColor: {r: 0.18424894, g: 0.22918192, b: 0.30181992, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -130,7 +130,6 @@ MeshRenderer:
   m_PreserveUVs: 1
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_SelectedWireframeHidden: 0
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
@@ -319,7 +318,6 @@ MeshRenderer:
   m_PreserveUVs: 1
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_SelectedWireframeHidden: 0
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
@@ -417,7 +415,6 @@ MeshRenderer:
   m_PreserveUVs: 1
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_SelectedWireframeHidden: 0
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
@@ -496,7 +493,6 @@ MeshRenderer:
   m_PreserveUVs: 1
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_SelectedWireframeHidden: 0
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
@@ -594,7 +590,6 @@ MeshRenderer:
   m_PreserveUVs: 1
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_SelectedWireframeHidden: 0
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
@@ -871,7 +866,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a1e83ab3c6c9d7468fff9be485a1390, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _resolution: 48
-  _scale: 3
-  _opacity: 0
-  _shader: {fileID: 4800000, guid: 91ab1c47c9f838443beca9fa3a157e14, type: 3}
+  _sourceOpacity: 1
+  _motionImageOpacity: 1
+  _motionImageAmplitude: 10
+  _motionVectorsOpacity: 1
+  _motionVectorsResolution: 16
+  _motionVectorsAmplitude: 50
+  _commonShader: {fileID: 4800000, guid: f104e85b3463c2748a02d2f07582fa63, type: 3}
+  _motionShader: {fileID: 4800000, guid: 91ab1c47c9f838443beca9fa3a157e14, type: 3}
