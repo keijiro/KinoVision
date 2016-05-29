@@ -1,4 +1,4 @@
-﻿//
+//
 // Kino/Vision - Frame visualization utility
 //
 // Copyright (C) 2016 Keijiro Takahashi
