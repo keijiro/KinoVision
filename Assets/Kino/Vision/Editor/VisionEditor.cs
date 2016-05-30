@@ -59,18 +59,18 @@ namespace Kino
         {
             serializedObject.Update();
 
-            EditorGUILayout.LabelField("Source Image");
+            EditorGUILayout.LabelField("Source Image", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_sourceOpacity, _textOpacity);
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Motion Vectors (overlay)");
+            EditorGUILayout.LabelField("Motion Vectors (overlay)", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_motionImageOpacity, _textOpacity);
             EditorGUILayout.PropertyField(_motionImageAmplitude, _textAmplitude);
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Motion Vectors (arrows)");
+            EditorGUILayout.LabelField("Motion Vectors (arrows)", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_motionVectorsOpacity, _textOpacity);
             EditorGUILayout.PropertyField(_motionVectorsResolution, _textResolution);
             EditorGUILayout.PropertyField(_motionVectorsAmplitude, _textAmplitude);
