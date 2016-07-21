@@ -32,6 +32,10 @@ namespace Kino
     {
         SerializedProperty _sourceOpacity;
 
+        SerializedProperty _normalsOpacity;
+        SerializedProperty _useGBufferForNormals;
+        SerializedProperty _detectInvalidNormals;
+
         SerializedProperty _motionImageOpacity;
         SerializedProperty _motionImageAmplitude;
 
@@ -40,12 +44,18 @@ namespace Kino
         SerializedProperty _motionVectorsAmplitude;
 
         static GUIContent _textAmplitude = new GUIContent("Amplitude");
+        static GUIContent _textCheckValidity = new GUIContent("Check Validity");
         static GUIContent _textOpacity = new GUIContent("Opacity");
         static GUIContent _textResolution = new GUIContent("Resolution");
+        static GUIContent _textUseGBuffer = new GUIContent("Use G Buffer");
 
         void OnEnable()
         {
             _sourceOpacity = serializedObject.FindProperty("_sourceOpacity");
+
+            _normalsOpacity = serializedObject.FindProperty("_normalsOpacity");
+            _useGBufferForNormals = serializedObject.FindProperty("_useGBufferForNormals");
+            _detectInvalidNormals = serializedObject.FindProperty("_detectInvalidNormals");
 
             _motionImageOpacity = serializedObject.FindProperty("_motionImageOpacity");
             _motionImageAmplitude = serializedObject.FindProperty("_motionImageAmplitude");
@@ -61,6 +71,13 @@ namespace Kino
 
             EditorGUILayout.LabelField("Source Image", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_sourceOpacity, _textOpacity);
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField("Normals", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_normalsOpacity, _textOpacity);
+            EditorGUILayout.PropertyField(_useGBufferForNormals, _textUseGBuffer);
+            EditorGUILayout.PropertyField(_detectInvalidNormals, _textCheckValidity);
 
             EditorGUILayout.Space();
 

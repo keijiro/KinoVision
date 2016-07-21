@@ -36,6 +36,19 @@ namespace Kino
 
         #endregion
 
+        #region Properties for normals
+
+        [SerializeField, Range(0, 1)]
+        float _normalsOpacity = 0;
+
+        [SerializeField]
+        bool _useGBufferForNormals = false;
+
+        [SerializeField]
+        bool _detectInvalidNormals = false;
+
+        #endregion
+
         #region Properties for motion image
 
         [SerializeField, Range(0, 1)]
@@ -66,11 +79,26 @@ namespace Kino
         Material _commonMaterial;
 
         [SerializeField, HideInInspector]
+        Shader _normalsShader;
+        Material _normalsMaterial;
+
+        [SerializeField, HideInInspector]
         Shader _motionShader;
         Material _motionMaterial;
 
         ArrowArray _arrows;
 
+        // Target camera
+        Camera TargetCamera {
+            get { return GetComponent<Camera>(); }
+        }
+
+        // Check if the G-buffer is available.
+        bool IsGBufferAvailable {
+            get { return TargetCamera.actualRenderingPath == RenderingPath.DeferredShading; }
+        }
+
+        // Rebuild arrows if needed.
         void PrepareArrows()
         {
             var row = _motionVectorsResolution;
@@ -83,6 +111,7 @@ namespace Kino
             }
         }
 
+        // Draw arrows in an immediate-mode fashion.
         void DrawArrows(RenderTexture rt)
         {
             PrepareArrows();
@@ -105,9 +134,12 @@ namespace Kino
 
         void OnEnable()
         {
-            // Initialize the pairs of shader/material.
+            // Initialize the pairs of shaders/materials.
             _commonMaterial = new Material(Shader.Find("Hidden/Kino/Vision/Common"));
             _commonMaterial.hideFlags = HideFlags.DontSave;
+
+            _normalsMaterial = new Material(Shader.Find("Hidden/Kino/Vision/Normals"));
+            _normalsMaterial.hideFlags = HideFlags.DontSave;
 
             _motionMaterial = new Material(Shader.Find("Hidden/Kino/Vision/Motion"));
             _motionMaterial.hideFlags = HideFlags.DontSave;
@@ -122,6 +154,9 @@ namespace Kino
             DestroyImmediate(_commonMaterial);
             _commonMaterial = null;
 
+            DestroyImmediate(_normalsMaterial);
+            _normalsMaterial = null;
+
             DestroyImmediate(_motionMaterial);
             _motionMaterial = null;
 
@@ -131,11 +166,13 @@ namespace Kino
 
         void Update()
         {
-            // Update the depth texture mode.
-            var camera = GetComponent<Camera>();
+            // Update depth texture mode.
+            if (_normalsOpacity > 0 || _detectInvalidNormals)
+                if (!(_useGBufferForNormals && IsGBufferAvailable))
+                    TargetCamera.depthTextureMode |= DepthTextureMode.DepthNormals;
 
             if (_motionImageOpacity > 0 || _motionVectorsOpacity > 0)
-                camera.depthTextureMode |= DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
+                TargetCamera.depthTextureMode |= DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
         }
 
         void OnRenderImage(RenderTexture source, RenderTexture destination)
@@ -144,6 +181,18 @@ namespace Kino
             var temp = RenderTexture.GetTemporary(source.width, source.height);
             _commonMaterial.SetFloat("_Opacity", _sourceOpacity);
             Graphics.Blit(source, temp, _commonMaterial, 0);
+
+            // Normals
+            if (_normalsOpacity > 0 || _detectInvalidNormals)
+            {
+                var pass = (_useGBufferForNormals && IsGBufferAvailable) ? 1 : 0;
+                var temp2 = RenderTexture.GetTemporary(source.width, source.height);
+                _normalsMaterial.SetFloat("_Opacity", _normalsOpacity);
+                _normalsMaterial.SetFloat("_Validate", _detectInvalidNormals ? 1 : 0);
+                Graphics.Blit(temp, temp2, _normalsMaterial, pass);
+                RenderTexture.ReleaseTemporary(temp);
+                temp = temp2;
+            }
 
             // Motion vectors (imaging)
             if (_motionImageOpacity > 0)

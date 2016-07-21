@@ -26,7 +26,7 @@ using System.Collections.Generic;
 
 namespace Kino
 {
-    public partial class Vision : MonoBehaviour
+    public partial class Vision
     {
         class ArrowArray 
         {
