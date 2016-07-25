@@ -31,6 +31,7 @@ Shader "Hidden/Kino/Vision/Normals"
     }
     Subshader
     {
+        // Depth normals
         Pass
         {
             ZTest Always Cull Off ZWrite Off
@@ -43,6 +44,7 @@ Shader "Hidden/Kino/Vision/Normals"
             #pragma target 3.0
             ENDCG
         }
+        // G Buffer
         Pass
         {
             ZTest Always Cull Off ZWrite Off
@@ -55,6 +57,7 @@ Shader "Hidden/Kino/Vision/Normals"
             #pragma target 3.0
             ENDCG
         }
+        // G Buffer with validity check
         Pass
         {
             ZTest Always Cull Off ZWrite Off

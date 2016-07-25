@@ -25,6 +25,7 @@ using UnityEngine;
 
 namespace Kino
 {
+    [ExecuteInEditMode]
     [RequireComponent(typeof(Camera))]
     [AddComponentMenu("Kino Image Effects/Vision")]
     public partial class Vision : MonoBehaviour
@@ -34,53 +35,62 @@ namespace Kino
         [SerializeField, Range(0, 1)]
         float _sourceOpacity = 1;
 
+        [SerializeField]
+        bool _useDepthNormals;
+
         #endregion
 
         #region Properties for depth
 
-        public enum DepthMethod { BlackWhite, Hue }
+        [SerializeField]
+        bool _enableDepth;
 
         [SerializeField, Range(0, 1)]
-        float _depthOpacity = 0;
+        float _depthOpacity = 1;
+
+        public enum DepthVisualization { BlackWhite, Hue }
 
         [SerializeField]
-        DepthMethod _depthMethod;
+        DepthVisualization _depthVisualization;
 
         [SerializeField]
         float _depthRepeat = 10;
-
-        [SerializeField]
-        bool _useGBufferForDepth = false;
 
         #endregion
 
         #region Properties for normals
 
-        [SerializeField, Range(0, 1)]
-        float _normalsOpacity = 0;
-
         [SerializeField]
-        bool _useGBufferForNormals = false;
+        bool _enableNormals;
+
+        [SerializeField, Range(0, 1)]
+        float _normalsOpacity = 1;
 
         [SerializeField]
         bool _detectInvalidNormals = false;
 
         #endregion
 
-        #region Properties for motion image
-
-        [SerializeField, Range(0, 1)]
-        float _motionImageOpacity = 0;
+        #region Properties for motion overlay
 
         [SerializeField]
-        float _motionImageAmplitude = 10;
+        bool _enableMotionOverlay;
+
+        [SerializeField, Range(0, 1)]
+        float _motionOverlayOpacity = 1;
+
+        [SerializeField]
+        float _motionOverlayAmplitude = 10;
 
         #endregion
 
         #region Properties for motion vectors
 
+        [SerializeField]
+        bool _enableMotionVectors;
+
         [SerializeField, Range(0, 1)]
-        float _motionVectorsOpacity = 0;
+        float _motionVectorsOpacity = 1;
 
         [SerializeField, Range(8, 64)]
         int _motionVectorsResolution = 16;
@@ -195,15 +205,17 @@ namespace Kino
         void Update()
         {
             // Update depth texture mode.
-            if (_depthOpacity > 0)
-                if (!(_useGBufferForDepth && IsGBufferAvailable))
+            if (_enableDepth && _depthOpacity > 0)
+                if (_useDepthNormals)
+                    TargetCamera.depthTextureMode |= DepthTextureMode.DepthNormals;
+                else
+                    TargetCamera.depthTextureMode |= DepthTextureMode.Depth;
+
+            if (_enableNormals && _normalsOpacity > 0)
+                if (_useDepthNormals || !IsGBufferAvailable)
                     TargetCamera.depthTextureMode |= DepthTextureMode.DepthNormals;
 
-            if (_normalsOpacity > 0 || _detectInvalidNormals)
-                if (!(_useGBufferForNormals && IsGBufferAvailable))
-                    TargetCamera.depthTextureMode |= DepthTextureMode.DepthNormals;
-
-            if (_motionImageOpacity > 0 || _motionVectorsOpacity > 0)
+            if (_motionOverlayOpacity > 0 || _motionVectorsOpacity > 0)
                 TargetCamera.depthTextureMode |= DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
         }
 
@@ -215,43 +227,52 @@ namespace Kino
             Graphics.Blit(source, temp, _commonMaterial, 0);
 
             // Depth
-            if (_depthOpacity > 0)
+            if (_enableDepth && _depthOpacity > 0)
             {
-                var pass = (_useGBufferForDepth && IsGBufferAvailable) ? 2 : 0;
-                if (_depthMethod == DepthMethod.Hue) pass++;
+                var pass = _useDepthNormals ? 2 : 0;
+                if (_depthVisualization == DepthVisualization.Hue) pass++;
+
                 var temp2 = RenderTexture.GetTemporary(source.width, source.height);
                 _depthMaterial.SetFloat("_Opacity", _depthOpacity);
                 _depthMaterial.SetFloat("_Repeat", _depthRepeat);
                 Graphics.Blit(temp, temp2, _depthMaterial, pass);
+
                 RenderTexture.ReleaseTemporary(temp);
                 temp = temp2;
             }
 
             // Normals
-            if (_normalsOpacity > 0 || _detectInvalidNormals)
+            if (_enableNormals && (_normalsOpacity > 0 || _detectInvalidNormals))
             {
-                var pass = (_useGBufferForNormals && IsGBufferAvailable) ? 1 : 0;
-                if (pass == 1 && _detectInvalidNormals) pass++;
+                var pass = 0;
+                if (!_useDepthNormals && IsGBufferAvailable)
+                    pass = _detectInvalidNormals ? 2 : 1;
+
                 var temp2 = RenderTexture.GetTemporary(source.width, source.height);
                 _normalsMaterial.SetFloat("_Opacity", _normalsOpacity);
                 Graphics.Blit(temp, temp2, _normalsMaterial, pass);
+
                 RenderTexture.ReleaseTemporary(temp);
                 temp = temp2;
             }
 
-            // Motion vectors (imaging)
-            if (_motionImageOpacity > 0)
+            // Motion vectors (overlay)
+            if (_enableMotionOverlay && _motionOverlayOpacity > 0)
             {
                 var temp2 = RenderTexture.GetTemporary(source.width, source.height);
-                _motionMaterial.SetFloat("_Opacity", _motionImageOpacity);
-                _motionMaterial.SetFloat("_Amplitude", _motionImageAmplitude);
+                _motionMaterial.SetFloat("_Opacity", _motionOverlayOpacity);
+                _motionMaterial.SetFloat("_Amplitude", _motionOverlayAmplitude);
                 Graphics.Blit(temp, temp2, _motionMaterial, 0);
+
                 RenderTexture.ReleaseTemporary(temp);
                 temp = temp2;
             }
 
             // Motion vectors (arrows)
-            if (_motionVectorsOpacity > 0) DrawArrows(temp);
+            if (_enableMotionVectors && _motionVectorsOpacity > 0)
+            {
+                DrawArrows(temp);
+            }
 
             // Finish
             Graphics.Blit(temp, destination);

@@ -26,52 +26,73 @@ using UnityEditor;
 
 namespace Kino
 {
-    [CanEditMultipleObjects]
     [CustomEditor(typeof(Vision))]
     public class VisionEditor : Editor
     {
+        // Common
         SerializedProperty _sourceOpacity;
+        SerializedProperty _useDepthNormals;
 
+        // Depth
+        SerializedProperty _enableDepth;
         SerializedProperty _depthOpacity;
-        SerializedProperty _depthMethod;
+        SerializedProperty _depthVisualization;
         SerializedProperty _depthRepeat;
-        SerializedProperty _useGBufferForDepth;
 
+        static GUIContent _textDepth = new GUIContent("Depth");
+        static GUIContent _textOpacity = new GUIContent("Opacity");
+        static GUIContent _textVisualization = new GUIContent("Visualization");
+        static GUIContent _textRepeat = new GUIContent("Repeat");
+
+        // Normals
+        SerializedProperty _enableNormals;
         SerializedProperty _normalsOpacity;
-        SerializedProperty _useGBufferForNormals;
         SerializedProperty _detectInvalidNormals;
 
-        SerializedProperty _motionImageOpacity;
-        SerializedProperty _motionImageAmplitude;
+        static GUIContent _textNormals = new GUIContent("Normals");
+        static GUIContent _textCheckValidity = new GUIContent("Check Validity");
 
+        // Motion (overlay)
+        SerializedProperty _enableMotionOverlay;
+        SerializedProperty _motionOverlayOpacity;
+        SerializedProperty _motionOverlayAmplitude;
+
+        static GUIContent _textMotionOverlay = new GUIContent("Motion (overlay)");
+        static GUIContent _textAmplitude = new GUIContent("Amplitude");
+
+        // Motion (vectors)
+        SerializedProperty _enableMotionVectors;
         SerializedProperty _motionVectorsOpacity;
         SerializedProperty _motionVectorsResolution;
         SerializedProperty _motionVectorsAmplitude;
 
-        static GUIContent _textAmplitude = new GUIContent("Amplitude");
-        static GUIContent _textCheckValidity = new GUIContent("Check Validity");
-        static GUIContent _textOpacity = new GUIContent("Opacity");
-        static GUIContent _textRepeat = new GUIContent("Repeat");
+        static GUIContent _textMotionVectors = new GUIContent("Motion (vectors)");
         static GUIContent _textResolution = new GUIContent("Resolution");
-        static GUIContent _textUseGBuffer = new GUIContent("Use G Buffer");
-        static GUIContent _textVisualizationMethod = new GUIContent("Visualization Method");
 
         void OnEnable()
         {
+            // Common
             _sourceOpacity = serializedObject.FindProperty("_sourceOpacity");
+            _useDepthNormals = serializedObject.FindProperty("_useDepthNormals");
 
+            // Depth
+            _enableDepth = serializedObject.FindProperty("_enableDepth");
             _depthOpacity = serializedObject.FindProperty("_depthOpacity");
-            _depthMethod = serializedObject.FindProperty("_depthMethod");
+            _depthVisualization = serializedObject.FindProperty("_depthVisualization");
             _depthRepeat = serializedObject.FindProperty("_depthRepeat");
-            _useGBufferForDepth = serializedObject.FindProperty("_useGBufferForDepth");
 
+            // Normals
+            _enableNormals = serializedObject.FindProperty("_enableNormals");
             _normalsOpacity = serializedObject.FindProperty("_normalsOpacity");
-            _useGBufferForNormals = serializedObject.FindProperty("_useGBufferForNormals");
             _detectInvalidNormals = serializedObject.FindProperty("_detectInvalidNormals");
 
-            _motionImageOpacity = serializedObject.FindProperty("_motionImageOpacity");
-            _motionImageAmplitude = serializedObject.FindProperty("_motionImageAmplitude");
+            // Motion (overlay)
+            _enableMotionOverlay = serializedObject.FindProperty("_enableMotionOverlay");
+            _motionOverlayOpacity = serializedObject.FindProperty("_motionOverlayOpacity");
+            _motionOverlayAmplitude = serializedObject.FindProperty("_motionOverlayAmplitude");
 
+            // Motion (vectors)
+            _enableMotionVectors = serializedObject.FindProperty("_enableMotionVectors");
             _motionVectorsOpacity = serializedObject.FindProperty("_motionVectorsOpacity");
             _motionVectorsResolution = serializedObject.FindProperty("_motionVectorsResolution");
             _motionVectorsAmplitude = serializedObject.FindProperty("_motionVectorsAmplitude");
@@ -81,36 +102,59 @@ namespace Kino
         {
             serializedObject.Update();
 
-            EditorGUILayout.LabelField("Source Image", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(_sourceOpacity, _textOpacity);
+            // Common
+            EditorGUILayout.PropertyField(_sourceOpacity);
+            EditorGUILayout.PropertyField(_useDepthNormals);
 
-            EditorGUILayout.Space();
+            if (_enableDepth.boolValue) EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Depth", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(_depthOpacity, _textOpacity);
-            EditorGUILayout.PropertyField(_depthMethod, _textVisualizationMethod);
-            EditorGUILayout.PropertyField(_depthRepeat, _textRepeat);
-            EditorGUILayout.PropertyField(_useGBufferForDepth, _textUseGBuffer);
+            // Depth
+            EditorGUILayout.PropertyField(_enableDepth, _textDepth);
+            if (_enableDepth.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(_depthOpacity, _textOpacity);
+                EditorGUILayout.PropertyField(_depthVisualization, _textVisualization);
+                EditorGUILayout.PropertyField(_depthRepeat, _textRepeat);
+                EditorGUI.indentLevel--;
+            }
 
-            EditorGUILayout.Space();
+            if (_enableDepth.boolValue || _enableNormals.boolValue) EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Normals", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(_normalsOpacity, _textOpacity);
-            EditorGUILayout.PropertyField(_useGBufferForNormals, _textUseGBuffer);
-            EditorGUILayout.PropertyField(_detectInvalidNormals, _textCheckValidity);
+            // Normals
+            EditorGUILayout.PropertyField(_enableNormals, _textNormals);
+            if (_enableNormals.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(_normalsOpacity, _textOpacity);
+                EditorGUILayout.PropertyField(_detectInvalidNormals, _textCheckValidity);
+                EditorGUI.indentLevel--;
+            }
 
-            EditorGUILayout.Space();
+            if (_enableNormals.boolValue || _enableMotionOverlay.boolValue) EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Motion Vectors (overlay)", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(_motionImageOpacity, _textOpacity);
-            EditorGUILayout.PropertyField(_motionImageAmplitude, _textAmplitude);
+            // Motion (overlay)
+            EditorGUILayout.PropertyField(_enableMotionOverlay, _textMotionOverlay);
+            if (_enableMotionOverlay.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(_motionOverlayOpacity, _textOpacity);
+                EditorGUILayout.PropertyField(_motionOverlayAmplitude, _textAmplitude);
+                EditorGUI.indentLevel--;
+            }
 
-            EditorGUILayout.Space();
+            if (_enableMotionOverlay.boolValue || _enableMotionVectors.boolValue) EditorGUILayout.Space();
 
-            EditorGUILayout.LabelField("Motion Vectors (arrows)", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(_motionVectorsOpacity, _textOpacity);
-            EditorGUILayout.PropertyField(_motionVectorsResolution, _textResolution);
-            EditorGUILayout.PropertyField(_motionVectorsAmplitude, _textAmplitude);
+            // Motion (vectors)
+            EditorGUILayout.PropertyField(_enableMotionVectors, _textMotionVectors);
+            if (_enableMotionVectors.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(_motionVectorsOpacity, _textOpacity);
+                EditorGUILayout.PropertyField(_motionVectorsResolution, _textResolution);
+                EditorGUILayout.PropertyField(_motionVectorsAmplitude, _textAmplitude);
+                EditorGUI.indentLevel--;
+            }
 
             serializedObject.ApplyModifiedProperties();
         }
