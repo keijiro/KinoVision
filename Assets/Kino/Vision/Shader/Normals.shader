@@ -55,7 +55,10 @@ Shader "Hidden/Kino/Vision/Normals"
         n = GammaToLinearSpace(n);
     #endif
 
-        return half4(lerp(lerp(src.rgb, n, _Opacity), half3(1, 0, 0), invalid), src.a);
+        half3 rgb = lerp(src.rgb, n, _Opacity);
+        rgb = lerp(rgb, half3(1, 0, 0), invalid * _Validate);
+
+        return half4(rgb, src.a);
     }
 
     half4 frag_DepthNormals(v2f_img i) : SV_Target
