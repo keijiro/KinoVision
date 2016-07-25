@@ -38,6 +38,7 @@ Shader "Hidden/Kino/Vision/Depth"
             #define USE_CAMERA_DEPTH
             #define VISUALIZE_BLACK_WHITE
             #include "Depth.cginc"
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_img
             #pragma fragment frag_depth
             #pragma target 3.0
@@ -51,6 +52,7 @@ Shader "Hidden/Kino/Vision/Depth"
             #define USE_CAMERA_DEPTH
             #define VISUALIZE_HUE
             #include "Depth.cginc"
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_img
             #pragma fragment frag_depth
             #pragma target 3.0
@@ -64,6 +66,7 @@ Shader "Hidden/Kino/Vision/Depth"
             #define USE_CAMERA_DEPTH_NORMALS
             #define VISUALIZE_BLACK_WHITE
             #include "Depth.cginc"
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_img
             #pragma fragment frag_depth
             #pragma target 3.0
@@ -77,6 +80,7 @@ Shader "Hidden/Kino/Vision/Depth"
             #define USE_CAMERA_DEPTH_NORMALS
             #define VISUALIZE_HUE
             #include "Depth.cginc"
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_img
             #pragma fragment frag_depth
             #pragma target 3.0

@@ -29,65 +29,17 @@ Shader "Hidden/Kino/Vision/Normals"
         [Gamma] _Opacity("", Float) = 1
         _Validate("", Float) = 1
     }
-
-    CGINCLUDE
-
-    #include "UnityCG.cginc"
-
-    sampler2D _MainTex;
-
-    sampler2D _CameraGBufferTexture2;
-    sampler2D_float _CameraDepthTexture;
-    sampler2D _CameraDepthNormalsTexture;
-
-    half _Opacity;
-    half _Validate;
-
-    half4 ProcessFragment(float2 uv, float3 n, float isZero)
-    {
-        half4 src = tex2D(_MainTex, uv);
-
-        float l = length(n);
-        float invalid = max(l < 0.99, l > 1.01) - isZero;
-
-        n = (n + 1) * 0.5;
-    #if !UNITY_COLORSPACE_GAMMA
-        n = GammaToLinearSpace(n);
-    #endif
-
-        half3 rgb = lerp(src.rgb, n, _Opacity);
-        rgb = lerp(rgb, half3(1, 0, 0), invalid * _Validate);
-
-        return half4(rgb, src.a);
-    }
-
-    half4 frag_DepthNormals(v2f_img i) : SV_Target
-    {
-        float4 cdn = tex2D(_CameraDepthNormalsTexture, i.uv);
-        float3 n = DecodeViewNormalStereo(cdn);
-        float isZero = (dot(n, 1) == 0);
-        return ProcessFragment(i.uv, n, isZero);
-    }
-
-    half4 frag_GBuffer(v2f_img i) : SV_Target
-    {
-        float3 n = tex2D(_CameraGBufferTexture2, i.uv).xyz;
-        float isZero = (dot(n, 1) == 0);
-        n.z = 1 - n.z;
-        n = n * 2 - 1;
-        return ProcessFragment(i.uv, n, isZero);
-    }
-
-    ENDCG
-
     Subshader
     {
         Pass
         {
             ZTest Always Cull Off ZWrite Off
             CGPROGRAM
+            #define USE_CAMERA_DEPTH_NORMALS
+            #include "Normals.cginc"
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_img
-            #pragma fragment frag_DepthNormals
+            #pragma fragment frag_normals
             #pragma target 3.0
             ENDCG
         }
@@ -95,8 +47,24 @@ Shader "Hidden/Kino/Vision/Normals"
         {
             ZTest Always Cull Off ZWrite Off
             CGPROGRAM
+            #define USE_GBUFFER
+            #include "Normals.cginc"
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_img
-            #pragma fragment frag_GBuffer
+            #pragma fragment frag_normals
+            #pragma target 3.0
+            ENDCG
+        }
+        Pass
+        {
+            ZTest Always Cull Off ZWrite Off
+            CGPROGRAM
+            #define USE_GBUFFER
+            #define CHECK_VALIDITY
+            #include "Normals.cginc"
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
+            #pragma vertex vert_img
+            #pragma fragment frag_normals
             #pragma target 3.0
             ENDCG
         }

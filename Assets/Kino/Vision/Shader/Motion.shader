@@ -160,6 +160,7 @@ Shader "Hidden/Kino/Vision/Motion"
         {
             ZTest Always Cull Off ZWrite Off
             CGPROGRAM
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_img
             #pragma fragment frag_mv_imaging
             #pragma target 3.0
@@ -170,6 +171,7 @@ Shader "Hidden/Kino/Vision/Motion"
             Blend SrcAlpha OneMinusSrcAlpha
             ZTest Always Cull Off ZWrite Off
             CGPROGRAM
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_mv_arrows
             #pragma fragment frag_mv_arrows
             #pragma target 3.0

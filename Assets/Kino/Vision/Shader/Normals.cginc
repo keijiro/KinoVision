@@ -26,43 +26,39 @@
 
 sampler2D _MainTex;
 half _Opacity;
-half _Repeat;
+half _Validate;
 
-sampler2D_float _CameraDepthTexture;
+sampler2D _CameraGBufferTexture2;
 sampler2D _CameraDepthNormalsTexture;
 
-float3 Hue(float h)
-{
-    float r = abs(h * 6 - 3) - 1;
-    float g = 2 - abs(h * 6 - 2);
-    float b = 2 - abs(h * 6 - 4);
-    return saturate(float3(r, g, b));
-}
-
-half4 frag_depth(v2f_img i) : SV_Target
+half4 frag_normals(v2f_img i) : SV_Target
 {
     half4 src = tex2D(_MainTex, i.uv);
 
-#ifdef USE_CAMERA_DEPTH
-    float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
-    depth = Linear01Depth(depth);
-    depth = 1 - depth;
-#else // USE_CAMERA_DEPTH_NORMALS
+#ifdef USE_CAMERA_DEPTH_NORMALS
     float4 cdn = tex2D(_CameraDepthNormalsTexture, i.uv);
-    float depth = DecodeFloatRG(cdn.zw) * _ProjectionParams.x;
+    float3 n = DecodeViewNormalStereo(cdn);
+    float isZero = (dot(n, 1) == 0);
+#else // USE_GBUFFER
+    float3 n = tex2D(_CameraGBufferTexture2, i.uv).xyz;
+    float isZero = (dot(n, 1) == 0);
+    n.z = 1 - n.z;
+    n = n * 2 - 1;
 #endif
 
-#ifdef VISUALIZE_BLACK_WHITE
-    half3 rgb = frac(depth * _Repeat);
-#else // VISUALIZE_HUE
-    half3 rgb = Hue(frac(depth * _Repeat));
-#endif
+    float l = length(n);
+    float invalid = max(l < 0.99, l > 1.01) - isZero;
 
+    n = (n + 1) * 0.5;
 #if !UNITY_COLORSPACE_GAMMA
-    rgb = GammaToLinearSpace(rgb);
+    n = GammaToLinearSpace(n);
 #endif
 
-    rgb = lerp(src.rgb, rgb, _Opacity);
+    half3 rgb = lerp(src.rgb, n, _Opacity);
+
+#ifdef CHECK_VALIDITY
+    rgb = lerp(rgb, half3(1, 0, 0), invalid * _Validate);
+#endif
 
     return half4(rgb, src.a);
 }

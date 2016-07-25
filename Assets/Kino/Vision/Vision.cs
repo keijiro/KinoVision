@@ -231,9 +231,9 @@ namespace Kino
             if (_normalsOpacity > 0 || _detectInvalidNormals)
             {
                 var pass = (_useGBufferForNormals && IsGBufferAvailable) ? 1 : 0;
+                if (pass == 1 && _detectInvalidNormals) pass++;
                 var temp2 = RenderTexture.GetTemporary(source.width, source.height);
                 _normalsMaterial.SetFloat("_Opacity", _normalsOpacity);
-                _normalsMaterial.SetFloat("_Validate", _detectInvalidNormals ? 1 : 0);
                 Graphics.Blit(temp, temp2, _normalsMaterial, pass);
                 RenderTexture.ReleaseTemporary(temp);
                 temp = temp2;
