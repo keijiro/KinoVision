@@ -1,11 +1,12 @@
 fileFormatVersion: 2
 guid: 3a1e83ab3c6c9d7468fff9be485a1390
-timeCreated: 1469089774
+timeCreated: 1469425300
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - _commonShader: {fileID: 4800000, guid: f104e85b3463c2748a02d2f07582fa63, type: 3}
+  - _depthShader: {fileID: 4800000, guid: 795f6ac530df2d841a5c46108a864471, type: 3}
   - _normalsShader: {fileID: 4800000, guid: 0e8aa0b0e4758d74a9d7f988d1a6287d, type: 3}
   - _motionShader: {fileID: 4800000, guid: 91ab1c47c9f838443beca9fa3a157e14, type: 3}
   executionOrder: 0

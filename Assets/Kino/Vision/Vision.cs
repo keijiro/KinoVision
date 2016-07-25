@@ -36,6 +36,24 @@ namespace Kino
 
         #endregion
 
+        #region Properties for depth
+
+        public enum DepthMethod { BlackWhite, Hue }
+
+        [SerializeField, Range(0, 1)]
+        float _depthOpacity = 0;
+
+        [SerializeField]
+        DepthMethod _depthMethod;
+
+        [SerializeField]
+        float _depthRepeat = 10;
+
+        [SerializeField]
+        bool _useGBufferForDepth = false;
+
+        #endregion
+
         #region Properties for normals
 
         [SerializeField, Range(0, 1)]
@@ -77,6 +95,10 @@ namespace Kino
         [SerializeField, HideInInspector]
         Shader _commonShader;
         Material _commonMaterial;
+
+        [SerializeField, HideInInspector]
+        Shader _depthShader;
+        Material _depthMaterial;
 
         [SerializeField, HideInInspector]
         Shader _normalsShader;
@@ -138,6 +160,9 @@ namespace Kino
             _commonMaterial = new Material(Shader.Find("Hidden/Kino/Vision/Common"));
             _commonMaterial.hideFlags = HideFlags.DontSave;
 
+            _depthMaterial = new Material(Shader.Find("Hidden/Kino/Vision/Depth"));
+            _depthMaterial.hideFlags = HideFlags.DontSave;
+
             _normalsMaterial = new Material(Shader.Find("Hidden/Kino/Vision/Normals"));
             _normalsMaterial.hideFlags = HideFlags.DontSave;
 
@@ -154,6 +179,9 @@ namespace Kino
             DestroyImmediate(_commonMaterial);
             _commonMaterial = null;
 
+            DestroyImmediate(_depthMaterial);
+            _depthMaterial = null;
+
             DestroyImmediate(_normalsMaterial);
             _normalsMaterial = null;
 
@@ -167,6 +195,10 @@ namespace Kino
         void Update()
         {
             // Update depth texture mode.
+            if (_depthOpacity > 0)
+                if (!(_useGBufferForDepth && IsGBufferAvailable))
+                    TargetCamera.depthTextureMode |= DepthTextureMode.DepthNormals;
+
             if (_normalsOpacity > 0 || _detectInvalidNormals)
                 if (!(_useGBufferForNormals && IsGBufferAvailable))
                     TargetCamera.depthTextureMode |= DepthTextureMode.DepthNormals;
@@ -181,6 +213,19 @@ namespace Kino
             var temp = RenderTexture.GetTemporary(source.width, source.height);
             _commonMaterial.SetFloat("_Opacity", _sourceOpacity);
             Graphics.Blit(source, temp, _commonMaterial, 0);
+
+            // Depth
+            if (_depthOpacity > 0)
+            {
+                var pass = (_useGBufferForDepth && IsGBufferAvailable) ? 2 : 0;
+                if (_depthMethod == DepthMethod.Hue) pass++;
+                var temp2 = RenderTexture.GetTemporary(source.width, source.height);
+                _depthMaterial.SetFloat("_Opacity", _depthOpacity);
+                _depthMaterial.SetFloat("_Repeat", _depthRepeat);
+                Graphics.Blit(temp, temp2, _depthMaterial, pass);
+                RenderTexture.ReleaseTemporary(temp);
+                temp = temp2;
+            }
 
             // Normals
             if (_normalsOpacity > 0 || _detectInvalidNormals)

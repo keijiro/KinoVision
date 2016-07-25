@@ -32,6 +32,11 @@ namespace Kino
     {
         SerializedProperty _sourceOpacity;
 
+        SerializedProperty _depthOpacity;
+        SerializedProperty _depthMethod;
+        SerializedProperty _depthRepeat;
+        SerializedProperty _useGBufferForDepth;
+
         SerializedProperty _normalsOpacity;
         SerializedProperty _useGBufferForNormals;
         SerializedProperty _detectInvalidNormals;
@@ -46,12 +51,19 @@ namespace Kino
         static GUIContent _textAmplitude = new GUIContent("Amplitude");
         static GUIContent _textCheckValidity = new GUIContent("Check Validity");
         static GUIContent _textOpacity = new GUIContent("Opacity");
+        static GUIContent _textRepeat = new GUIContent("Repeat");
         static GUIContent _textResolution = new GUIContent("Resolution");
         static GUIContent _textUseGBuffer = new GUIContent("Use G Buffer");
+        static GUIContent _textVisualizationMethod = new GUIContent("Visualization Method");
 
         void OnEnable()
         {
             _sourceOpacity = serializedObject.FindProperty("_sourceOpacity");
+
+            _depthOpacity = serializedObject.FindProperty("_depthOpacity");
+            _depthMethod = serializedObject.FindProperty("_depthMethod");
+            _depthRepeat = serializedObject.FindProperty("_depthRepeat");
+            _useGBufferForDepth = serializedObject.FindProperty("_useGBufferForDepth");
 
             _normalsOpacity = serializedObject.FindProperty("_normalsOpacity");
             _useGBufferForNormals = serializedObject.FindProperty("_useGBufferForNormals");
@@ -71,6 +83,14 @@ namespace Kino
 
             EditorGUILayout.LabelField("Source Image", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_sourceOpacity, _textOpacity);
+
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField("Depth", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_depthOpacity, _textOpacity);
+            EditorGUILayout.PropertyField(_depthMethod, _textVisualizationMethod);
+            EditorGUILayout.PropertyField(_depthRepeat, _textRepeat);
+            EditorGUILayout.PropertyField(_useGBufferForDepth, _textUseGBuffer);
 
             EditorGUILayout.Space();
 
