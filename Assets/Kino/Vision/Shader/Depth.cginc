@@ -31,14 +31,6 @@ half _Repeat;
 sampler2D_float _CameraDepthTexture;
 sampler2D _CameraDepthNormalsTexture;
 
-float3 Hue(float h)
-{
-    float r = abs(h * 6 - 3) - 1;
-    float g = 2 - abs(h * 6 - 2);
-    float b = 2 - abs(h * 6 - 4);
-    return saturate(float3(r, g, b));
-}
-
 half4 frag_depth(v2f_img i) : SV_Target
 {
     half4 src = tex2D(_MainTex, i.uv);
@@ -46,17 +38,15 @@ half4 frag_depth(v2f_img i) : SV_Target
 #ifdef USE_CAMERA_DEPTH
     float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
     depth = Linear01Depth(depth);
-    depth = 1 - depth;
 #else // USE_CAMERA_DEPTH_NORMALS
     float4 cdn = tex2D(_CameraDepthNormalsTexture, i.uv);
-    float depth = DecodeFloatRG(cdn.zw) * _ProjectionParams.x;
+    float depth = DecodeFloatRG(cdn.zw);
 #endif
 
-#ifdef VISUALIZE_BLACK_WHITE
-    half3 rgb = frac(depth * _Repeat);
-#else // VISUALIZE_HUE
-    half3 rgb = Hue(frac(depth * _Repeat));
-#endif
+    float dr = frac(depth * _Repeat);
+    float d1 = 1 - dr;
+    float d2 = 1 / (1 + dr * 100);
+    half3 rgb = half3(d1, d2, d2);
 
 #if !UNITY_COLORSPACE_GAMMA
     rgb = GammaToLinearSpace(rgb);

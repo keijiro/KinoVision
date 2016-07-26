@@ -30,13 +30,12 @@ Shader "Hidden/Kino/Vision/Depth"
     }
     Subshader
     {
-        // camera depth, black white
+        // camera depth
         Pass
         {
             ZTest Always Cull Off ZWrite Off
             CGPROGRAM
             #define USE_CAMERA_DEPTH
-            #define VISUALIZE_BLACK_WHITE
             #include "Depth.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_img
@@ -44,41 +43,12 @@ Shader "Hidden/Kino/Vision/Depth"
             #pragma target 3.0
             ENDCG
         }
-        // camera depth, hue
-        Pass
-        {
-            ZTest Always Cull Off ZWrite Off
-            CGPROGRAM
-            #define USE_CAMERA_DEPTH
-            #define VISUALIZE_HUE
-            #include "Depth.cginc"
-            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_img
-            #pragma fragment frag_depth
-            #pragma target 3.0
-            ENDCG
-        }
-        // camera depth normals, black white
+        // camera depth normals
         Pass
         {
             ZTest Always Cull Off ZWrite Off
             CGPROGRAM
             #define USE_CAMERA_DEPTH_NORMALS
-            #define VISUALIZE_BLACK_WHITE
-            #include "Depth.cginc"
-            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_img
-            #pragma fragment frag_depth
-            #pragma target 3.0
-            ENDCG
-        }
-        // camera depth normals, hue
-        Pass
-        {
-            ZTest Always Cull Off ZWrite Off
-            CGPROGRAM
-            #define USE_CAMERA_DEPTH_NORMALS
-            #define VISUALIZE_HUE
             #include "Depth.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_img

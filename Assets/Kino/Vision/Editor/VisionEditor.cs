@@ -36,12 +36,10 @@ namespace Kino
         // Depth
         SerializedProperty _enableDepth;
         SerializedProperty _depthOpacity;
-        SerializedProperty _depthVisualization;
         SerializedProperty _depthRepeat;
 
         static GUIContent _textDepth = new GUIContent("Depth");
         static GUIContent _textOpacity = new GUIContent("Opacity");
-        static GUIContent _textVisualization = new GUIContent("Visualization");
         static GUIContent _textRepeat = new GUIContent("Repeat");
 
         // Normals
@@ -78,7 +76,6 @@ namespace Kino
             // Depth
             _enableDepth = serializedObject.FindProperty("_enableDepth");
             _depthOpacity = serializedObject.FindProperty("_depthOpacity");
-            _depthVisualization = serializedObject.FindProperty("_depthVisualization");
             _depthRepeat = serializedObject.FindProperty("_depthRepeat");
 
             // Normals
@@ -114,7 +111,6 @@ namespace Kino
             {
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(_depthOpacity, _textOpacity);
-                EditorGUILayout.PropertyField(_depthVisualization, _textVisualization);
                 EditorGUILayout.PropertyField(_depthRepeat, _textRepeat);
                 EditorGUI.indentLevel--;
             }

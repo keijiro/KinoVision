@@ -48,13 +48,8 @@ namespace Kino
         [SerializeField, Range(0, 1)]
         float _depthOpacity = 1;
 
-        public enum DepthVisualization { BlackWhite, Hue }
-
         [SerializeField]
-        DepthVisualization _depthVisualization;
-
-        [SerializeField]
-        float _depthRepeat = 10;
+        float _depthRepeat = 1;
 
         #endregion
 
@@ -229,8 +224,7 @@ namespace Kino
             // Depth
             if (_enableDepth && _depthOpacity > 0)
             {
-                var pass = _useDepthNormals ? 2 : 0;
-                if (_depthVisualization == DepthVisualization.Hue) pass++;
+                var pass = _useDepthNormals ? 1 : 0;
 
                 var temp2 = RenderTexture.GetTemporary(source.width, source.height);
                 _depthMaterial.SetFloat("_Opacity", _depthOpacity);
