@@ -30,127 +30,83 @@ namespace Kino
     public class VisionEditor : Editor
     {
         // Common
-        SerializedProperty _sourceOpacity;
-        SerializedProperty _useDepthNormals;
+        SerializedProperty _source;
+        SerializedProperty _blendRatio;
+        SerializedProperty _preferDepthNormals;
+
+        static GUIContent _textUseDepthNormals = new GUIContent("Use Depth Normals");
 
         // Depth
-        SerializedProperty _enableDepth;
-        SerializedProperty _depthOpacity;
         SerializedProperty _depthRepeat;
 
-        static GUIContent _textDepth = new GUIContent("Depth");
-        static GUIContent _textOpacity = new GUIContent("Opacity");
         static GUIContent _textRepeat = new GUIContent("Repeat");
 
         // Normals
-        SerializedProperty _enableNormals;
-        SerializedProperty _normalsOpacity;
-        SerializedProperty _detectInvalidNormals;
+        SerializedProperty _validateNormals;
 
-        static GUIContent _textNormals = new GUIContent("Normals");
         static GUIContent _textCheckValidity = new GUIContent("Check Validity");
 
-        // Motion (overlay)
-        SerializedProperty _enableMotionOverlay;
-        SerializedProperty _motionOverlayOpacity;
+        // Motion vectors
         SerializedProperty _motionOverlayAmplitude;
-
-        static GUIContent _textMotionOverlay = new GUIContent("Motion (overlay)");
-        static GUIContent _textAmplitude = new GUIContent("Amplitude");
-
-        // Motion (vectors)
-        SerializedProperty _enableMotionVectors;
-        SerializedProperty _motionVectorsOpacity;
-        SerializedProperty _motionVectorsResolution;
         SerializedProperty _motionVectorsAmplitude;
+        SerializedProperty _motionVectorsResolution;
 
-        static GUIContent _textMotionVectors = new GUIContent("Motion (vectors)");
-        static GUIContent _textResolution = new GUIContent("Resolution");
+        static GUIContent _textOverlayAmplitude = new GUIContent("Overlay Amplitude");
+        static GUIContent _textArrowsAmplitude = new GUIContent("Arrows Amplitude");
+        static GUIContent _textArrowsResolution = new GUIContent("Arrows Resolution");
 
         void OnEnable()
         {
             // Common
-            _sourceOpacity = serializedObject.FindProperty("_sourceOpacity");
-            _useDepthNormals = serializedObject.FindProperty("_useDepthNormals");
+            _source = serializedObject.FindProperty("_source");
+            _blendRatio = serializedObject.FindProperty("_blendRatio");
+            _preferDepthNormals = serializedObject.FindProperty("_preferDepthNormals");
 
             // Depth
-            _enableDepth = serializedObject.FindProperty("_enableDepth");
-            _depthOpacity = serializedObject.FindProperty("_depthOpacity");
             _depthRepeat = serializedObject.FindProperty("_depthRepeat");
 
             // Normals
-            _enableNormals = serializedObject.FindProperty("_enableNormals");
-            _normalsOpacity = serializedObject.FindProperty("_normalsOpacity");
-            _detectInvalidNormals = serializedObject.FindProperty("_detectInvalidNormals");
+            _validateNormals = serializedObject.FindProperty("_validateNormals");
 
-            // Motion (overlay)
-            _enableMotionOverlay = serializedObject.FindProperty("_enableMotionOverlay");
-            _motionOverlayOpacity = serializedObject.FindProperty("_motionOverlayOpacity");
+            // Motion vectors
             _motionOverlayAmplitude = serializedObject.FindProperty("_motionOverlayAmplitude");
-
-            // Motion (vectors)
-            _enableMotionVectors = serializedObject.FindProperty("_enableMotionVectors");
-            _motionVectorsOpacity = serializedObject.FindProperty("_motionVectorsOpacity");
-            _motionVectorsResolution = serializedObject.FindProperty("_motionVectorsResolution");
             _motionVectorsAmplitude = serializedObject.FindProperty("_motionVectorsAmplitude");
+            _motionVectorsResolution = serializedObject.FindProperty("_motionVectorsResolution");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            // Common
-            EditorGUILayout.PropertyField(_sourceOpacity);
-            EditorGUILayout.PropertyField(_useDepthNormals);
+            EditorGUILayout.PropertyField(_source);
 
-            if (_enableDepth.boolValue) EditorGUILayout.Space();
+            var source = (Vision.Source)_source.enumValueIndex;
 
-            // Depth
-            EditorGUILayout.PropertyField(_enableDepth, _textDepth);
-            if (_enableDepth.boolValue)
+            if (source == Vision.Source.Depth)
             {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_depthOpacity, _textOpacity);
+                // Depth
                 EditorGUILayout.PropertyField(_depthRepeat, _textRepeat);
-                EditorGUI.indentLevel--;
+                EditorGUILayout.PropertyField(_preferDepthNormals, _textUseDepthNormals);
             }
 
-            if (_enableDepth.boolValue || _enableNormals.boolValue) EditorGUILayout.Space();
-
-            // Normals
-            EditorGUILayout.PropertyField(_enableNormals, _textNormals);
-            if (_enableNormals.boolValue)
+            if (source == Vision.Source.Normals)
             {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_normalsOpacity, _textOpacity);
-                EditorGUILayout.PropertyField(_detectInvalidNormals, _textCheckValidity);
-                EditorGUI.indentLevel--;
+                // Normals
+                EditorGUILayout.PropertyField(_preferDepthNormals, _textUseDepthNormals);
+                EditorGUI.BeginDisabledGroup(_preferDepthNormals.boolValue);
+                EditorGUILayout.PropertyField(_validateNormals, _textCheckValidity);
+                EditorGUI.EndDisabledGroup();
             }
 
-            if (_enableNormals.boolValue || _enableMotionOverlay.boolValue) EditorGUILayout.Space();
-
-            // Motion (overlay)
-            EditorGUILayout.PropertyField(_enableMotionOverlay, _textMotionOverlay);
-            if (_enableMotionOverlay.boolValue)
+            if (source == Vision.Source.MotionVectors)
             {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_motionOverlayOpacity, _textOpacity);
-                EditorGUILayout.PropertyField(_motionOverlayAmplitude, _textAmplitude);
-                EditorGUI.indentLevel--;
+                // Motion vectors
+                EditorGUILayout.PropertyField(_motionOverlayAmplitude, _textOverlayAmplitude);
+                EditorGUILayout.PropertyField(_motionVectorsAmplitude, _textArrowsAmplitude);
+                EditorGUILayout.PropertyField(_motionVectorsResolution, _textArrowsResolution);
             }
 
-            if (_enableMotionOverlay.boolValue || _enableMotionVectors.boolValue) EditorGUILayout.Space();
-
-            // Motion (vectors)
-            EditorGUILayout.PropertyField(_enableMotionVectors, _textMotionVectors);
-            if (_enableMotionVectors.boolValue)
-            {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_motionVectorsOpacity, _textOpacity);
-                EditorGUILayout.PropertyField(_motionVectorsResolution, _textResolution);
-                EditorGUILayout.PropertyField(_motionVectorsAmplitude, _textAmplitude);
-                EditorGUI.indentLevel--;
-            }
+            EditorGUILayout.PropertyField(_blendRatio);
 
             serializedObject.ApplyModifiedProperties();
         }

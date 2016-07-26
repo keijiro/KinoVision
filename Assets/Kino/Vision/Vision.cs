@@ -30,23 +30,24 @@ namespace Kino
     [AddComponentMenu("Kino Image Effects/Vision")]
     public partial class Vision : MonoBehaviour
     {
-        #region Basic property
+        #region Common property
 
-        [SerializeField, Range(0, 1)]
-        float _sourceOpacity = 1;
+        public enum Source {
+            Depth, Normals, MotionVectors
+        }
 
         [SerializeField]
-        bool _useDepthNormals;
+        Source _source;
+
+        [SerializeField, Range(0, 1)]
+        float _blendRatio = 0.5f;
+
+        [SerializeField]
+        bool _preferDepthNormals;
 
         #endregion
 
         #region Properties for depth
-
-        [SerializeField]
-        bool _enableDepth;
-
-        [SerializeField, Range(0, 1)]
-        float _depthOpacity = 1;
 
         [SerializeField]
         float _depthRepeat = 1;
@@ -56,63 +57,27 @@ namespace Kino
         #region Properties for normals
 
         [SerializeField]
-        bool _enableNormals;
-
-        [SerializeField, Range(0, 1)]
-        float _normalsOpacity = 1;
-
-        [SerializeField]
-        bool _detectInvalidNormals = false;
-
-        #endregion
-
-        #region Properties for motion overlay
-
-        [SerializeField]
-        bool _enableMotionOverlay;
-
-        [SerializeField, Range(0, 1)]
-        float _motionOverlayOpacity = 1;
-
-        [SerializeField]
-        float _motionOverlayAmplitude = 10;
+        bool _validateNormals = false;
 
         #endregion
 
         #region Properties for motion vectors
 
         [SerializeField]
-        bool _enableMotionVectors;
-
-        [SerializeField, Range(0, 1)]
-        float _motionVectorsOpacity = 1;
-
-        [SerializeField, Range(8, 64)]
-        int _motionVectorsResolution = 16;
+        float _motionOverlayAmplitude = 10;
 
         [SerializeField]
         float _motionVectorsAmplitude = 50;
+
+        [SerializeField, Range(8, 64)]
+        int _motionVectorsResolution = 16;
 
         #endregion
 
         #region Private properties and methods
 
-        [SerializeField, HideInInspector]
-        Shader _commonShader;
-        Material _commonMaterial;
-
-        [SerializeField, HideInInspector]
-        Shader _depthShader;
-        Material _depthMaterial;
-
-        [SerializeField, HideInInspector]
-        Shader _normalsShader;
-        Material _normalsMaterial;
-
-        [SerializeField, HideInInspector]
-        Shader _motionShader;
-        Material _motionMaterial;
-
+        [SerializeField] Shader _shader;
+        Material _material;
         ArrowArray _arrows;
 
         // Target camera
@@ -139,19 +104,18 @@ namespace Kino
         }
 
         // Draw arrows in an immediate-mode fashion.
-        void DrawArrows(RenderTexture rt)
+        void DrawArrows(float aspect)
         {
             PrepareArrows();
 
             var sy = 1.0f / _motionVectorsResolution;
-            var sx = sy * rt.height / rt.width;
-            _motionMaterial.SetVector("_Scale", new Vector2(sx, sy));
+            var sx = sy / aspect;
+            _material.SetVector("_Scale", new Vector2(sx, sy));
 
-            _motionMaterial.SetFloat("_Opacity", _motionVectorsOpacity);
-            _motionMaterial.SetFloat("_Amplitude", _motionVectorsAmplitude);
+            _material.SetFloat("_Blend", _blendRatio);
+            _material.SetFloat("_Amplitude", _motionVectorsAmplitude);
 
-            RenderTexture.active = rt;
-            _motionMaterial.SetPass(1);
+            _material.SetPass(5);
             Graphics.DrawMeshNow(_arrows.mesh, Matrix4x4.identity);
         }
 
@@ -162,17 +126,8 @@ namespace Kino
         void OnEnable()
         {
             // Initialize the pairs of shaders/materials.
-            _commonMaterial = new Material(Shader.Find("Hidden/Kino/Vision/Common"));
-            _commonMaterial.hideFlags = HideFlags.DontSave;
-
-            _depthMaterial = new Material(Shader.Find("Hidden/Kino/Vision/Depth"));
-            _depthMaterial.hideFlags = HideFlags.DontSave;
-
-            _normalsMaterial = new Material(Shader.Find("Hidden/Kino/Vision/Normals"));
-            _normalsMaterial.hideFlags = HideFlags.DontSave;
-
-            _motionMaterial = new Material(Shader.Find("Hidden/Kino/Vision/Motion"));
-            _motionMaterial.hideFlags = HideFlags.DontSave;
+            _material = new Material(Shader.Find("Hidden/Kino/Vision"));
+            _material.hideFlags = HideFlags.DontSave;
 
             // Build the array of arrows.
             _arrows = new ArrowArray();
@@ -181,17 +136,8 @@ namespace Kino
 
         void OnDisable()
         {
-            DestroyImmediate(_commonMaterial);
-            _commonMaterial = null;
-
-            DestroyImmediate(_depthMaterial);
-            _depthMaterial = null;
-
-            DestroyImmediate(_normalsMaterial);
-            _normalsMaterial = null;
-
-            DestroyImmediate(_motionMaterial);
-            _motionMaterial = null;
+            DestroyImmediate(_material);
+            _material = null;
 
             _arrows.DestroyMesh();
             _arrows = null;
@@ -200,77 +146,46 @@ namespace Kino
         void Update()
         {
             // Update depth texture mode.
-            if (_enableDepth && _depthOpacity > 0)
-                if (_useDepthNormals)
+            if (_source == Source.Depth)
+                if (_preferDepthNormals)
                     TargetCamera.depthTextureMode |= DepthTextureMode.DepthNormals;
                 else
                     TargetCamera.depthTextureMode |= DepthTextureMode.Depth;
 
-            if (_enableNormals && _normalsOpacity > 0)
-                if (_useDepthNormals || !IsGBufferAvailable)
+            if (_source == Source.Normals)
+                if (_preferDepthNormals || !IsGBufferAvailable)
                     TargetCamera.depthTextureMode |= DepthTextureMode.DepthNormals;
 
-            if (_motionOverlayOpacity > 0 || _motionVectorsOpacity > 0)
+            if (_source == Source.MotionVectors)
                 TargetCamera.depthTextureMode |= DepthTextureMode.Depth | DepthTextureMode.MotionVectors;
         }
 
         void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
-            // Blit the original source image.
-            var temp = RenderTexture.GetTemporary(source.width, source.height);
-            _commonMaterial.SetFloat("_Opacity", _sourceOpacity);
-            Graphics.Blit(source, temp, _commonMaterial, 0);
-
-            // Depth
-            if (_enableDepth && _depthOpacity > 0)
+            if (_source == Source.Depth)
             {
-                var pass = _useDepthNormals ? 1 : 0;
-
-                var temp2 = RenderTexture.GetTemporary(source.width, source.height);
-                _depthMaterial.SetFloat("_Opacity", _depthOpacity);
-                _depthMaterial.SetFloat("_Repeat", _depthRepeat);
-                Graphics.Blit(temp, temp2, _depthMaterial, pass);
-
-                RenderTexture.ReleaseTemporary(temp);
-                temp = temp2;
+                // Depth
+                _material.SetFloat("_Blend", _blendRatio);
+                _material.SetFloat("_Repeat", _depthRepeat);
+                var pass = _preferDepthNormals ? 1 : 0;
+                Graphics.Blit(source, destination, _material, pass);
             }
-
-            // Normals
-            if (_enableNormals && (_normalsOpacity > 0 || _detectInvalidNormals))
+            else if (_source == Source.Normals)
             {
-                var pass = 0;
-                if (!_useDepthNormals && IsGBufferAvailable)
-                    pass = _detectInvalidNormals ? 2 : 1;
-
-                var temp2 = RenderTexture.GetTemporary(source.width, source.height);
-                _normalsMaterial.SetFloat("_Opacity", _normalsOpacity);
-                Graphics.Blit(temp, temp2, _normalsMaterial, pass);
-
-                RenderTexture.ReleaseTemporary(temp);
-                temp = temp2;
+                // Normals
+                _material.SetFloat("_Blend", _blendRatio);
+                _material.SetFloat("_Validate", _validateNormals ? 1 : 0);
+                var pass = (!_preferDepthNormals && IsGBufferAvailable) ? 3 : 2;
+                Graphics.Blit(source, destination, _material, pass);
             }
-
-            // Motion vectors (overlay)
-            if (_enableMotionOverlay && _motionOverlayOpacity > 0)
+            else if (_source == Source.MotionVectors)
             {
-                var temp2 = RenderTexture.GetTemporary(source.width, source.height);
-                _motionMaterial.SetFloat("_Opacity", _motionOverlayOpacity);
-                _motionMaterial.SetFloat("_Amplitude", _motionOverlayAmplitude);
-                Graphics.Blit(temp, temp2, _motionMaterial, 0);
-
-                RenderTexture.ReleaseTemporary(temp);
-                temp = temp2;
+                // Motion vectors
+                _material.SetFloat("_Blend", _blendRatio);
+                _material.SetFloat("_Amplitude", _motionOverlayAmplitude);
+                Graphics.Blit(source, destination, _material, 4);
+                DrawArrows((float)source.width / source.height);
             }
-
-            // Motion vectors (arrows)
-            if (_enableMotionVectors && _motionVectorsOpacity > 0)
-            {
-                DrawArrows(temp);
-            }
-
-            // Finish
-            Graphics.Blit(temp, destination);
-            RenderTexture.ReleaseTemporary(temp);
         }
 
         #endregion

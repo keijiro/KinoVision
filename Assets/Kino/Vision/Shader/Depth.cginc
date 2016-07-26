@@ -25,7 +25,7 @@
 #include "UnityCG.cginc"
 
 sampler2D _MainTex;
-half _Opacity;
+half _Blend;
 half _Repeat;
 
 sampler2D_float _CameraDepthTexture;
@@ -52,7 +52,7 @@ half4 frag_depth(v2f_img i) : SV_Target
     rgb = GammaToLinearSpace(rgb);
 #endif
 
-    rgb = lerp(src.rgb, rgb, _Opacity);
+    rgb = lerp(src.rgb, rgb, _Blend);
 
     return half4(rgb, src.a);
 }

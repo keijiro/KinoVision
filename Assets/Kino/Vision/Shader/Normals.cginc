@@ -25,7 +25,7 @@
 #include "UnityCG.cginc"
 
 sampler2D _MainTex;
-half _Opacity;
+half _Blend;
 half _Validate;
 
 sampler2D _CameraGBufferTexture2;
@@ -54,11 +54,8 @@ half4 frag_normals(v2f_img i) : SV_Target
     n = GammaToLinearSpace(n);
 #endif
 
-    half3 rgb = lerp(src.rgb, n, _Opacity);
-
-#ifdef CHECK_VALIDITY
-    rgb = lerp(rgb, half3(1, 0, 0), invalid * _Validate);
-#endif
+    half3 rgb = lerp(n, half3(1, 0, 0), invalid * _Validate);
+    rgb = lerp(src.rgb, rgb, _Blend);
 
     return half4(rgb, src.a);
 }

@@ -21,17 +21,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-Shader "Hidden/Kino/Vision/Normals"
+Shader "Hidden/Kino/Vision"
 {
     Properties
     {
         _MainTex("", 2D) = ""{}
-        [Gamma] _Opacity("", Float) = 1
-        _Validate("", Float) = 1
     }
     Subshader
     {
-        // Depth normals
+        // Depth with camera depth texture
+        Pass
+        {
+            ZTest Always Cull Off ZWrite Off
+            CGPROGRAM
+            #define USE_CAMERA_DEPTH
+            #include "Depth.cginc"
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
+            #pragma vertex vert_img
+            #pragma fragment frag_depth
+            #pragma target 3.0
+            ENDCG
+        }
+        // Depth with camera depth normals texture
+        Pass
+        {
+            ZTest Always Cull Off ZWrite Off
+            CGPROGRAM
+            #define USE_CAMERA_DEPTH_NORMALS
+            #include "Depth.cginc"
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
+            #pragma vertex vert_img
+            #pragma fragment frag_depth
+            #pragma target 3.0
+            ENDCG
+        }
+        // Depth with camera depth normals texture
         Pass
         {
             ZTest Always Cull Off ZWrite Off
@@ -44,7 +68,7 @@ Shader "Hidden/Kino/Vision/Normals"
             #pragma target 3.0
             ENDCG
         }
-        // G Buffer
+        // Depth with G buffer
         Pass
         {
             ZTest Always Cull Off ZWrite Off
@@ -57,17 +81,28 @@ Shader "Hidden/Kino/Vision/Normals"
             #pragma target 3.0
             ENDCG
         }
-        // G Buffer with validity check
+        // Motion vectors overlay
         Pass
         {
             ZTest Always Cull Off ZWrite Off
             CGPROGRAM
-            #define USE_GBUFFER
-            #define CHECK_VALIDITY
-            #include "Normals.cginc"
+            #include "MotionVectors.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
             #pragma vertex vert_img
-            #pragma fragment frag_normals
+            #pragma fragment frag_overlay
+            #pragma target 3.0
+            ENDCG
+        }
+        // Motion vectors arrows
+        Pass
+        {
+            Blend SrcAlpha OneMinusSrcAlpha
+            ZTest Always Cull Off ZWrite Off
+            CGPROGRAM
+            #include "MotionVectors.cginc"
+            #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
+            #pragma vertex vert_arrows
+            #pragma fragment frag_arrows
             #pragma target 3.0
             ENDCG
         }
