@@ -42,8 +42,8 @@ half4 frag_normals(v2f_img i) : SV_Target
 #else // USE_GBUFFER
     float3 n = tex2D(_CameraGBufferTexture2, i.uv).xyz;
     float isZero = (dot(n, 1) == 0);
-    n.z = 1 - n.z;
-    n = n * 2 - 1;
+    n = mul((float3x3)unity_WorldToCamera, n * 2 - 1);
+    n.z = -n.z;
 #endif
 
     float l = length(n);
