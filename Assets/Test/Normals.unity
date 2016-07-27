@@ -123,6 +123,7 @@ Light:
   m_Shadows:
     m_Type: 2
     m_Resolution: -1
+    m_CustomResolution: -1
     m_Strength: 1
     m_Bias: 0.05
     m_NormalBias: 0.4
@@ -148,10 +149,10 @@ Transform:
   m_LocalRotation: {x: 0.2336786, y: 0.25113106, z: -0.062614, w: 0.9372337}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 28, y: 30, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 28, y: 30, z: 0}
 --- !u!1 &943708878
 GameObject:
   m_ObjectHideFlags: 0
@@ -176,11 +177,11 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 1603570673}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1051660198
 GameObject:
   m_ObjectHideFlags: 0
@@ -243,10 +244,10 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1550636362
 GameObject:
   m_ObjectHideFlags: 0
@@ -309,10 +310,10 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1603570667
 GameObject:
   m_ObjectHideFlags: 0
@@ -421,10 +422,10 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -5.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 943708879}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1603570674
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -551,15 +552,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a1e83ab3c6c9d7468fff9be485a1390, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _sourceOpacity: 1
-  _normalsOpacity: 1
-  _useGBufferForNormals: 1
-  _detectInvalidNormals: 0
-  _motionImageOpacity: 0
-  _motionImageAmplitude: 10
-  _motionVectorsOpacity: 0
-  _motionVectorsResolution: 16
+  _source: 1
+  _blendRatio: 0.75
+  _preferDepthNormals: 0
+  _depthRepeat: 1
+  _validateNormals: 1
+  _motionOverlayAmplitude: 10
   _motionVectorsAmplitude: 50
-  _commonShader: {fileID: 4800000, guid: f104e85b3463c2748a02d2f07582fa63, type: 3}
-  _normalsShader: {fileID: 4800000, guid: 0e8aa0b0e4758d74a9d7f988d1a6287d, type: 3}
-  _motionShader: {fileID: 4800000, guid: 91ab1c47c9f838443beca9fa3a157e14, type: 3}
+  _motionVectorsResolution: 16
+  _shader: {fileID: 4800000, guid: f104e85b3463c2748a02d2f07582fa63, type: 3}
