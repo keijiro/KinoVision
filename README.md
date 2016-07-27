@@ -6,7 +6,7 @@ information.
 
 ![Screen][Image1]
 
-Currently *Vision* provides following three different modes.
+Currently, *Vision* provides following three different modes.
 
 #### Depth Mode
 
