@@ -37,7 +37,7 @@ Shader "Hidden/Kino/Vision"
             #define USE_CAMERA_DEPTH
             #include "Depth.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_img
+            #pragma vertex vert_common
             #pragma fragment frag_depth
             #pragma target 3.0
             ENDCG
@@ -50,7 +50,7 @@ Shader "Hidden/Kino/Vision"
             #define USE_CAMERA_DEPTH_NORMALS
             #include "Depth.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_img
+            #pragma vertex vert_common
             #pragma fragment frag_depth
             #pragma target 3.0
             ENDCG
@@ -63,7 +63,7 @@ Shader "Hidden/Kino/Vision"
             #define USE_CAMERA_DEPTH_NORMALS
             #include "Normals.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_img
+            #pragma vertex vert_common
             #pragma fragment frag_normals
             #pragma target 3.0
             ENDCG
@@ -76,7 +76,7 @@ Shader "Hidden/Kino/Vision"
             #define USE_GBUFFER
             #include "Normals.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_img
+            #pragma vertex vert_common
             #pragma fragment frag_normals
             #pragma target 3.0
             ENDCG
@@ -88,7 +88,7 @@ Shader "Hidden/Kino/Vision"
             CGPROGRAM
             #include "MotionVectors.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_img
+            #pragma vertex vert_common
             #pragma fragment frag_overlay
             #pragma target 3.0
             ENDCG

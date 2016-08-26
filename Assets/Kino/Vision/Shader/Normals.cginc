@@ -22,25 +22,24 @@
 // THE SOFTWARE.
 //
 
-#include "UnityCG.cginc"
+#include "Common.cginc"
 
-sampler2D _MainTex;
 half _Blend;
 half _Validate;
 
 sampler2D _CameraGBufferTexture2;
 sampler2D _CameraDepthNormalsTexture;
 
-half4 frag_normals(v2f_img i) : SV_Target
+half4 frag_normals(v2f_common i) : SV_Target
 {
     half4 src = tex2D(_MainTex, i.uv);
 
 #ifdef USE_CAMERA_DEPTH_NORMALS
-    float4 cdn = tex2D(_CameraDepthNormalsTexture, i.uv);
+    float4 cdn = tex2D(_CameraDepthNormalsTexture, i.uvAlt);
     float3 n = DecodeViewNormalStereo(cdn);
     float isZero = (dot(n, 1) == 0);
 #else // USE_GBUFFER
-    float3 n = tex2D(_CameraGBufferTexture2, i.uv).xyz;
+    float3 n = tex2D(_CameraGBufferTexture2, i.uvAlt).xyz;
     float isZero = (dot(n, 1) == 0);
     n = mul((float3x3)unity_WorldToCamera, n * 2 - 1);
     n.z = -n.z;

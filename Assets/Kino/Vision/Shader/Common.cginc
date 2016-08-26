@@ -22,44 +22,31 @@
 // THE SOFTWARE.
 //
 
-#include "Common.cginc"
+#include "UnityCG.cginc"
 
-half _Blend;
-half _Repeat;
+sampler2D _MainTex;
+float4 _MainTex_TexelSize;
+float4 _MainTex_ST;
 
-sampler2D_float _CameraDepthTexture;
-sampler2D _CameraDepthNormalsTexture;
-
-float LinearizeDepth(float z)
+// Common vertex shader
+struct v2f_common
 {
-    float isOrtho = unity_OrthoParams.w;
-    float isPers = 1 - unity_OrthoParams.w;
-    z *= _ZBufferParams.x;
-    return (1 - isOrtho * z) / (isPers * z + _ZBufferParams.y);
-}
+    float4 pos : SV_POSITION;
+    half2 uv : TEXCOORD0;    // Screen space UV (supports stereo rendering)
+    half2 uvAlt : TEXCOORD2; // Alternative UV (supports v-flip case)
+};
 
-half4 frag_depth(v2f_common i) : SV_Target
+v2f_common vert_common(appdata_img v)
 {
-    half4 src = tex2D(_MainTex, i.uv);
-
-#ifdef USE_CAMERA_DEPTH
-    float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uvAlt);
-    depth = LinearizeDepth(depth);
-#else // USE_CAMERA_DEPTH_NORMALS
-    float4 cdn = tex2D(_CameraDepthNormalsTexture, i.uvAlt);
-    float depth = DecodeFloatRG(cdn.zw);
+    half2 uvAlt = v.texcoord;
+#if UNITY_UV_STARTS_AT_TOP
+    if (_MainTex_TexelSize.y < 0) uvAlt.y = 1 - uvAlt.y;
 #endif
 
-    float dr = frac(depth * _Repeat);
-    float d1 = 1 - dr;
-    float d2 = 1 / (1 + dr * 100);
-    half3 rgb = half3(d1, d2, d2);
+    v2f_common o;
+    o.pos = UnityObjectToClipPos(v.vertex);
+    o.uv = UnityStereoScreenSpaceUVAdjust(v.texcoord, _MainTex_ST);
+    o.uvAlt = UnityStereoScreenSpaceUVAdjust(uvAlt, _MainTex_ST);
 
-#if !UNITY_COLORSPACE_GAMMA
-    rgb = GammaToLinearSpace(rgb);
-#endif
-
-    rgb = lerp(src.rgb, rgb, _Blend);
-
-    return half4(rgb, src.a);
+    return o;
 }

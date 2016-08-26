@@ -22,10 +22,7 @@
 // THE SOFTWARE.
 //
 
-#include "UnityCG.cginc"
-
-sampler2D _MainTex;
-float4 _MainTex_TexelSize;
+#include "Common.cginc"
 
 half _Blend;
 half _Amplitude;
@@ -48,11 +45,11 @@ half4 VectorToColor(float2 mv)
 }
 
 // Motion vectors overlay shader (fragment only)
-half4 frag_overlay(v2f_img i) : SV_Target
+half4 frag_overlay(v2f_common i) : SV_Target
 {
     half4 src = tex2D(_MainTex, i.uv);
 
-    half2 mv = tex2D(_CameraMotionVectorsTexture, i.uv).rg * _Amplitude;
+    half2 mv = tex2D(_CameraMotionVectorsTexture, i.uvAlt).rg * _Amplitude;
     half4 mc = VectorToColor(mv);
 
     half3 rgb = mc.rgb;
