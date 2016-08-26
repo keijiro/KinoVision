@@ -31,13 +31,21 @@ half _Repeat;
 sampler2D_float _CameraDepthTexture;
 sampler2D _CameraDepthNormalsTexture;
 
+float LinearizeDepth(float z)
+{
+    float isOrtho = unity_OrthoParams.w;
+    float isPers = 1 - unity_OrthoParams.w;
+    z *= _ZBufferParams.x;
+    return (1 - isOrtho * z) / (isPers * z + _ZBufferParams.y);
+}
+
 half4 frag_depth(v2f_img i) : SV_Target
 {
     half4 src = tex2D(_MainTex, i.uv);
 
 #ifdef USE_CAMERA_DEPTH
     float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
-    depth = Linear01Depth(depth);
+    depth = LinearizeDepth(depth);
 #else // USE_CAMERA_DEPTH_NORMALS
     float4 cdn = tex2D(_CameraDepthNormalsTexture, i.uv);
     float depth = DecodeFloatRG(cdn.zw);
