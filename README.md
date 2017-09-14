@@ -6,7 +6,7 @@ information.
 
 ![Screen](https://i.imgur.com/qqHGi3yl.png)
 
-System requirements
+System Requirements
 -------------------
 
 Unity 2017.1.0 or later
