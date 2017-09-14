@@ -146,7 +146,7 @@ Shader "Hidden/Kino/Motion/Prefilter"
     // NeighborMax filter
     half4 frag_neighbor_max(v2f_img i) : SV_Target
     {
-        static const half cw = 1.01f; // center weight tweak
+        const half cw = 1.01f; // center weight tweak
 
         float2 tx = _MainTex_TexelSize.xy;
 

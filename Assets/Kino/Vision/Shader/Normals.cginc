@@ -25,7 +25,7 @@ half4 NormalsFragment(CommonVaryings input) : SV_Target
 #endif
 
     float l = length(n);
-    float invalid = max(l < 0.99, l > 1.01) - isZero;
+    float invalid = max((float)(l < 0.99), (float)(l > 1.01)) - isZero;
 
     n = (n + 1) * 0.5;
 #if !UNITY_COLORSPACE_GAMMA
