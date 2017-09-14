@@ -1,26 +1,6 @@
-//
-// Kino/Vision - Frame visualization utility
-//
-// Copyright (C) 2016 Keijiro Takahashi
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+// KinoVision - Frame visualization utility
+// https://github.com/keijiro/KinoVision
+
 Shader "Hidden/Kino/Vision"
 {
     Properties
@@ -37,8 +17,8 @@ Shader "Hidden/Kino/Vision"
             #define USE_CAMERA_DEPTH
             #include "Depth.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_common
-            #pragma fragment frag_depth
+            #pragma vertex CommonVertex
+            #pragma fragment DepthFragment
             #pragma target 3.0
             ENDCG
         }
@@ -50,8 +30,8 @@ Shader "Hidden/Kino/Vision"
             #define USE_CAMERA_DEPTH_NORMALS
             #include "Depth.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_common
-            #pragma fragment frag_depth
+            #pragma vertex CommonVertex
+            #pragma fragment DepthFragment
             #pragma target 3.0
             ENDCG
         }
@@ -63,8 +43,8 @@ Shader "Hidden/Kino/Vision"
             #define USE_CAMERA_DEPTH_NORMALS
             #include "Normals.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_common
-            #pragma fragment frag_normals
+            #pragma vertex CommonVertex
+            #pragma fragment NormalsFragment
             #pragma target 3.0
             ENDCG
         }
@@ -76,8 +56,8 @@ Shader "Hidden/Kino/Vision"
             #define USE_GBUFFER
             #include "Normals.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_common
-            #pragma fragment frag_normals
+            #pragma vertex CommonVertex
+            #pragma fragment NormalsFragment
             #pragma target 3.0
             ENDCG
         }
@@ -88,12 +68,12 @@ Shader "Hidden/Kino/Vision"
             CGPROGRAM
             #include "MotionVectors.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_common
-            #pragma fragment frag_overlay
+            #pragma vertex CommonVertex
+            #pragma fragment OverlayFragment
             #pragma target 3.0
             ENDCG
         }
-        // Motion vectors arrows
+        // Motion vector arrows
         Pass
         {
             Blend SrcAlpha OneMinusSrcAlpha
@@ -101,8 +81,8 @@ Shader "Hidden/Kino/Vision"
             CGPROGRAM
             #include "MotionVectors.cginc"
             #pragma multi_compile _ UNITY_COLORSPACE_GAMMA
-            #pragma vertex vert_arrows
-            #pragma fragment frag_arrows
+            #pragma vertex ArrowVertex
+            #pragma fragment ArrowFragment
             #pragma target 3.0
             ENDCG
         }

@@ -1,32 +1,12 @@
-//
-// Kino/Vision - Frame visualization utility
-//
-// Copyright (C) 2016 Keijiro Takahashi
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+// KinoVision - Frame visualization utility
+// https://github.com/keijiro/KinoVision
 
 #include "Common.cginc"
 
 half _Blend;
 half _Amplitude;
-float2 _Scale;
+int _ColumnCount;
+int _RowCount;
 
 sampler2D_half _CameraMotionVectorsTexture;
 
@@ -44,12 +24,12 @@ half4 VectorToColor(float2 mv)
     return saturate(half4(r, g, b, a));
 }
 
-// Motion vectors overlay shader (fragment only)
-half4 frag_overlay(v2f_common i) : SV_Target
+// Motion vectors overlay shader
+half4 OverlayFragment(CommonVaryings input) : SV_Target
 {
-    half4 src = tex2D(_MainTex, i.uv);
+    half4 src = tex2D(_MainTex, input.uv0);
 
-    half2 mv = tex2D(_CameraMotionVectorsTexture, i.uvAlt).rg * _Amplitude;
+    half2 mv = tex2D(_CameraMotionVectorsTexture, input.uv1).rg * _Amplitude;
     half4 mc = VectorToColor(mv);
 
     half3 rgb = mc.rgb;
@@ -64,70 +44,80 @@ half4 frag_overlay(v2f_common i) : SV_Target
     return half4(rgb, src.a);
 }
 
-// Vertex/fragment shader for drawing arrows
-struct v2f_arrows
+// Motion vector arrow shader
+struct ArrowVaryings
 {
-    float4 vertex : SV_POSITION;
+    float4 position : SV_POSITION;
     float2 scoord : TEXCOORD;
     half4 color : COLOR;
 };
 
-v2f_arrows vert_arrows(appdata_base v)
+ArrowVaryings ArrowVertex(uint vertex_id : SV_VertexID)
 {
+    // Screen aspect ratio
+    float aspect = _ScreenParams.x * (_ScreenParams.w - 1);
+    float inv_aspect = _ScreenParams.y * (_ScreenParams.z - 1);
+
+    // Vertex IDs
+    uint arrow_id = vertex_id / 6;
+    uint point_id = vertex_id - arrow_id * 6;
+
+    // Column/Row number of the arrow
+    uint row = arrow_id / _ColumnCount;
+    uint col = arrow_id - row * _ColumnCount;
+
+    // Texture coordinate of the reference point
+    float2 uv = float2((col + 0.5) / _ColumnCount, (row + 0.5) / _RowCount);
+
     // Retrieve the motion vector.
-    float4 uv = float4(v.texcoord.xy, 0, 0);
-    half2 mv = tex2Dlod(_CameraMotionVectorsTexture, uv).rg * _Amplitude;
+    half2 mv = tex2Dlod(_CameraMotionVectorsTexture, float4(uv, 0, 0)).rg * _Amplitude;
 
     // Arrow color
     half4 color = VectorToColor(mv);
 
-    // Make a rotation matrix based on the motion vector.
-    float2x2 rot = float2x2(mv.y, mv.x, -mv.x, mv.y);
+    // Arrow vertex position parameter (0=origin, 1=head)
+    float arrow_l = point_id > 0;
 
-    // Rotate and scale the body of the arrow.
-    float2 pos = mul(rot, v.vertex.zy) * _Scale;
+    // Rotation matrix for the arrow head
+    float2 head_dir = normalize(mv * float2(aspect, 1));
+    float2x2 head_rot = float2x2(head_dir.y, head_dir.x, -head_dir.x, head_dir.y);
 
-    // Normalized variant of the motion vector and the rotation matrix.
-    float2 mv_n = normalize(mv);
-    float2x2 rot_n = float2x2(mv_n.y, mv_n.x, -mv_n.x, mv_n.y);
+    // Offset for arrow head vertices
+    float head_x = point_id == 3 ? -1 : (point_id == 5 ? 1 : 0);
+    head_x *= arrow_l * 0.3 * saturate(length(mv) * _RowCount);
 
-    // Rotate and scale the head of the arrow.
-    float2 head = float2(v.vertex.x, -abs(v.vertex.x)) * 0.3;
-    head *= saturate(color.a);
-    pos += mul(rot_n, head) * _Scale;
+    float2 head_offs = float2(head_x, -abs(head_x));
+    head_offs = mul(head_rot, head_offs) * float2(inv_aspect, 1);
 
-    // Offset the arrow position.
-    pos += v.texcoord.xy * 2 - 1;
+    // Vertex position in the clip space
+    float2 vp = mv * arrow_l + head_offs * 2 / _RowCount + uv * 2 - 1;
 
     // Convert to the screen coordinates.
-    float2 scoord = (pos + 1) * 0.5 * _ScreenParams.xy;
+    float2 scoord = (vp + 1) * 0.5 * _ScreenParams.xy;
 
     // Snap to a pixel-perfect position.
     scoord = round(scoord);
 
-    // Bring back to the normalized screen space.
-    pos = (scoord + 0.5) * (_ScreenParams.zw - 1) * 2 - 1;
-    pos.y *= _ProjectionParams.x;
+    // Bring back to the clip space.
+    vp = (scoord + 0.5) * (_ScreenParams.zw - 1) * 2 - 1;
+    vp.y *= _ProjectionParams.x;
 
     // Color tweaks
     color.rgb = GammaToLinearSpace(lerp(color.rgb, 1, 0.5));
-    color.a *= _Blend;
+    color.a = _Blend;
 
     // Output
-    v2f_arrows o;
-    o.vertex = float4(pos, 0, 1);
+    ArrowVaryings o;
+    o.position = float4(vp, 0, 1);
     o.scoord = scoord;
-    o.color = saturate(color);
+    o.color = color;
     return o;
 }
 
-half4 frag_arrows(v2f_arrows i) : SV_Target
+half4 ArrowFragment(ArrowVaryings input) : SV_Target
 {
-    // Pseudo anti-aliasing.
-    float aa = length(frac(i.scoord) - 0.5) / 0.707;
+    // Pseudo anti-aliasing
+    float aa = length(frac(input.scoord) - 0.5) / 0.707;
     aa *= (aa * (aa * 0.305306011 + 0.682171111) + 0.012522878); // gamma
-
-    half4 c = i.color;
-    c.a *= aa;
-    return c;
+    return half4(input.color.rgb, input.color.a * aa);
 }

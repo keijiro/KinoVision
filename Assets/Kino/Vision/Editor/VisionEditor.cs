@@ -1,38 +1,18 @@
-//
-// Kino/Vision - Frame visualization utility
-//
-// Copyright (C) 2016 Keijiro Takahashi
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+// KinoVision - Frame visualization utility
+// https://github.com/keijiro/KinoVision
+
 using UnityEngine;
 using UnityEditor;
 
 namespace Kino
 {
     [CustomEditor(typeof(Vision))]
-    public class VisionEditor : Editor
+    public sealed class VisionEditor : Editor
     {
         // Common
         SerializedProperty _source;
         SerializedProperty _blendRatio;
-        SerializedProperty _preferDepthNormals;
+        SerializedProperty _useDepthNormals;
 
         static GUIContent _textUseDepthNormals = new GUIContent("Use Depth Normals");
 
@@ -60,7 +40,7 @@ namespace Kino
             // Common
             _source = serializedObject.FindProperty("_source");
             _blendRatio = serializedObject.FindProperty("_blendRatio");
-            _preferDepthNormals = serializedObject.FindProperty("_preferDepthNormals");
+            _useDepthNormals = serializedObject.FindProperty("_useDepthNormals");
 
             // Depth
             _depthRepeat = serializedObject.FindProperty("_depthRepeat");
@@ -86,14 +66,14 @@ namespace Kino
             {
                 // Depth
                 EditorGUILayout.PropertyField(_depthRepeat, _textRepeat);
-                EditorGUILayout.PropertyField(_preferDepthNormals, _textUseDepthNormals);
+                EditorGUILayout.PropertyField(_useDepthNormals, _textUseDepthNormals);
             }
 
             if (source == Vision.Source.Normals)
             {
                 // Normals
-                EditorGUILayout.PropertyField(_preferDepthNormals, _textUseDepthNormals);
-                EditorGUI.BeginDisabledGroup(_preferDepthNormals.boolValue);
+                EditorGUILayout.PropertyField(_useDepthNormals, _textUseDepthNormals);
+                EditorGUI.BeginDisabledGroup(_useDepthNormals.boolValue);
                 EditorGUILayout.PropertyField(_validateNormals, _textCheckValidity);
                 EditorGUI.EndDisabledGroup();
             }

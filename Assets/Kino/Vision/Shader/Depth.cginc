@@ -1,26 +1,5 @@
-//
-// Kino/Vision - Frame visualization utility
-//
-// Copyright (C) 2016 Keijiro Takahashi
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+// KinoVision - Frame visualization utility
+// https://github.com/keijiro/KinoVision
 
 #include "Common.cginc"
 
@@ -38,15 +17,15 @@ float LinearizeDepth(float z)
     return (1 - isOrtho * z) / (isPers * z + _ZBufferParams.y);
 }
 
-half4 frag_depth(v2f_common i) : SV_Target
+half4 DepthFragment(CommonVaryings input) : SV_Target
 {
-    half4 src = tex2D(_MainTex, i.uv);
+    half4 src = tex2D(_MainTex, input.uv0);
 
 #ifdef USE_CAMERA_DEPTH
-    float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uvAlt);
+    float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, input.uv1);
     depth = LinearizeDepth(depth);
 #else // USE_CAMERA_DEPTH_NORMALS
-    float4 cdn = tex2D(_CameraDepthNormalsTexture, i.uvAlt);
+    float4 cdn = tex2D(_CameraDepthNormalsTexture, input.uv1);
     float depth = DecodeFloatRG(cdn.zw);
 #endif
 

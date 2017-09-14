@@ -902,10 +902,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _source: 2
   _blendRatio: 0.5
-  _preferDepthNormals: 0
+  _useDepthNormals: 0
   _depthRepeat: 1
   _validateNormals: 0
   _motionOverlayAmplitude: 10
-  _motionVectorsAmplitude: 50
-  _motionVectorsResolution: 29
+  _motionVectorsAmplitude: 1
+  _motionVectorsResolution: 32
   _shader: {fileID: 4800000, guid: f104e85b3463c2748a02d2f07582fa63, type: 3}

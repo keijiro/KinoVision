@@ -1,26 +1,5 @@
-//
-// Kino/Vision - Frame visualization utility
-//
-// Copyright (C) 2016 Keijiro Takahashi
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+// KinoVision - Frame visualization utility
+// https://github.com/keijiro/KinoVision
 
 #include "UnityCG.cginc"
 
@@ -29,24 +8,31 @@ float4 _MainTex_TexelSize;
 float4 _MainTex_ST;
 
 // Common vertex shader
-struct v2f_common
+
+struct CommonAttributes
 {
-    float4 pos : SV_POSITION;
-    half2 uv : TEXCOORD0;    // Screen space UV (supports stereo rendering)
-    half2 uvAlt : TEXCOORD2; // Alternative UV (supports v-flip case)
+    float4 position : POSITION;
+    float2 uv : TEXCOORD;
 };
 
-v2f_common vert_common(appdata_img v)
+struct CommonVaryings
 {
-    half2 uvAlt = v.texcoord;
+    float4 position : SV_POSITION;
+    half2 uv0 : TEXCOORD0; // Screen space UV (supports stereo rendering)
+    half2 uv1 : TEXCOORD1; // Alternative UV (supports v-flip case)
+};
+
+CommonVaryings CommonVertex(CommonAttributes input)
+{
+    float2 uv1 = input.uv;
+
 #if UNITY_UV_STARTS_AT_TOP
-    if (_MainTex_TexelSize.y < 0) uvAlt.y = 1 - uvAlt.y;
+    if (_MainTex_TexelSize.y < 0) uv1.y = 1 - uv1.y;
 #endif
 
-    v2f_common o;
-    o.pos = UnityObjectToClipPos(v.vertex);
-    o.uv = UnityStereoScreenSpaceUVAdjust(v.texcoord, _MainTex_ST);
-    o.uvAlt = UnityStereoScreenSpaceUVAdjust(uvAlt, _MainTex_ST);
-
+    CommonVaryings o;
+    o.position = UnityObjectToClipPos(input.position);
+    o.uv0 = UnityStereoScreenSpaceUVAdjust(input.uv, _MainTex_ST);
+    o.uv1 = UnityStereoScreenSpaceUVAdjust(uv1, _MainTex_ST);
     return o;
 }
